@@ -357,7 +357,7 @@ export default function App() {
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 {scores.map((p, i) => (
-                  <div key={p.id} style={{ background: i === 0 ? "linear-gradient(120deg,#1a0025,#2a0035)" : C.card, border: `1px solid ${rankBorder(i)}`, borderRadius: 12, padding: "16px 20px", display: "flex", alignItems: "center", gap: 16 }}>
+                  <div key={p.id} style={{ background: i === 0 ? "linear-gradient(120deg,#2e2e2e,#3a3a3a)" : C.card, border: `1px solid ${rankBorder(i)}`, borderRadius: 12, padding: "16px 20px", display: "flex", alignItems: "center", gap: 16 }}>
                     <div style={{ width: 36, height: 36, borderRadius: "50%", flexShrink: 0, background: i < 3 ? rankBorder(i) : C.cardAlt, display: "flex", alignItems: "center", justifyContent: "center", fontSize: i < 3 ? 18 : 13, fontWeight: 900, color: i < 3 ? "#0d0010" : C.textDim }}>
                       {i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : i + 1}
                     </div>
