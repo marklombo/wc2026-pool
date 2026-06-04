@@ -292,7 +292,7 @@ export default function App() {
     );
   }
 
-  const rankBorder = i => i === 0 ? C.primary : i === 1 ? C.secondary : i === 2 ? C.accent : C.border;
+  const rankBorder = i => i === 0 ? "#ff0000" : i === 1 ? "#cc0000" : i === 2 ? "#990000" : C.border;
 
   if (loading) return (
     <div style={{ minHeight: "100vh", background: C.bg, display: "flex", alignItems: "center", justifyContent: "center", color: C.primary, fontFamily: "Georgia, serif", fontSize: 18 }}>
@@ -358,7 +358,7 @@ export default function App() {
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 {scores.map((p, i) => (
                   <div key={p.id} style={{ background: i === 0 ? "linear-gradient(120deg,#2e2e2e,#3a3a3a)" : C.card, border: `1px solid ${rankBorder(i)}`, borderRadius: 12, padding: "16px 20px", display: "flex", alignItems: "center", gap: 16 }}>
-                    <div style={{ width: 36, height: 36, borderRadius: "50%", flexShrink: 0, background: i < 3 ? rankBorder(i) : C.cardAlt, display: "flex", alignItems: "center", justifyContent: "center", fontSize: i < 3 ? 18 : 13, fontWeight: 900, color: i < 3 ? "#0d0010" : C.textDim }}>
+                    <div style={{ width: 36, height: 36, borderRadius: "50%", flexShrink: 0, background: "#000000", display: "flex", alignItems: "center", justifyContent: "center", fontSize: i < 3 ? 18 : 13, fontWeight: 900, color: i < 3 ? "#ffffff" : C.textDim }}>
                       {i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : i + 1}
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
