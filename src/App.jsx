@@ -8,15 +8,15 @@ const supabase = createClient(
 
 // ─── Teams & Tiers ────────────────────────────────────────────────────────────
 const TIERS = {
-  1: { label: "Tier 1 — Top Contenders", sublabel: "FIFA Ranked 1–6", color: "#ff2d6b",
+  1: { label: "Tier 1 — Top Contenders", sublabel: "FIFA Ranked 1–6", color: "#e91e8c",
     teams: ["France","Spain","Argentina","England","Portugal","Brazil"] },
-  2: { label: "Tier 2 — Contenders", sublabel: "FIFA Ranked 7–12", color: "#ff6b35",
+  2: { label: "Tier 2 — Contenders", sublabel: "FIFA Ranked 7–12", color: "#f06292",
     teams: ["Netherlands","Morocco","Belgium","Germany","Croatia","Colombia"] },
-  3: { label: "Tier 3 — Dark Horses", sublabel: "FIFA Ranked 13–24", color: "#ff9a6b",
+  3: { label: "Tier 3 — Dark Horses", sublabel: "FIFA Ranked 13–24", color: "#f48fb1",
     teams: ["Senegal","Mexico","USA","Uruguay","Japan","Austria","Ecuador","South Korea","Norway","Switzerland","Türkiye","Australia"] },
-  4: { label: "Tier 4 — Wildcards", sublabel: "FIFA Ranked 25–36", color: "#ff6b9d",
+  4: { label: "Tier 4 — Wildcards", sublabel: "FIFA Ranked 25–36", color: "#ce93d8",
     teams: ["Iran","Denmark","Poland","Serbia","Sweden","Algeria","Ukraine","Scotland","Egypt","Ivory Coast","Bosnia and Herzegovina","Czechia"] },
-  5: { label: "Tier 5 — Underdogs", sublabel: "FIFA Ranked 37–48", color: "#c084b0",
+  5: { label: "Tier 5 — Underdogs", sublabel: "FIFA Ranked 37–48", color: "#aaaaaa",
     teams: ["Canada","Nigeria","Ghana","Cameroon","Saudi Arabia","Qatar","New Zealand","Congo DR","South Africa","Cape Verde","Curaçao","Uzbekistan"] },
 };
 
@@ -75,19 +75,19 @@ function computeScore(teams, groupResults, knockoutStages) {
 
 // ─── Color palette ────────────────────────────────────────────────────────────
 const C = {
-  bg: "#1a0008",
-  bgGrad: "linear-gradient(160deg,#1a0008 0%,#2d0015 55%,#1a000a 100%)",
-  card: "#240010",
-  cardAlt: "#2e0018",
-  border: "#7a1040",
-  borderLight: "#4a0828",
-  primary: "#ff2d6b",
-  secondary: "#ff6b9d",
-  accent: "#d44070",
-  gold: "#ff4f7b",
-  text: "#ffe8ef",
-  textMuted: "#c06080",
-  textDim: "#7a2040",
+  bg: "#1e1e1e",
+  bgGrad: "linear-gradient(160deg,#1e1e1e 0%,#252525 55%,#1e1e1e 100%)",
+  card: "#2a2a2a",
+  cardAlt: "#313131",
+  border: "#3d3d3d",
+  borderLight: "#333333",
+  primary: "#f06292",
+  secondary: "#f48fb1",
+  accent: "#e91e8c",
+  gold: "#f06292",
+  text: "#f0f0f0",
+  textMuted: "#aaaaaa",
+  textDim: "#666666",
 };
 
 function ScoringTable() {
@@ -320,6 +320,7 @@ export default function App() {
               Updated {lastUpdated.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
             </span>
           )}
+          <a href="https://www.google.com/search?q=2026+world+cup+schedule" target="_blank" rel="noreferrer" style={{ background: C.primary, border: "none", borderRadius: 6, color: "#1e1e1e", fontSize: 11, padding: "5px 11px", cursor: "pointer", fontWeight: 700, textDecoration: "none" }}>📅 Schedule & Bracket</a>
           <button onClick={fetchLiveScores} style={{ background: "transparent", border: `1px solid ${C.border}`, borderRadius: 6, color: C.textMuted, fontSize: 11, padding: "4px 10px", cursor: "pointer" }}>↻ Refresh</button>
           <nav style={{ display: "flex", gap: 6 }}>
             {[["standings", "🏆 Standings"], ["draft", "✍️ Join"], ["admin", "⚙️ Admin"]].map(([v, label]) => (
@@ -394,7 +395,7 @@ export default function App() {
               <div style={{ marginTop: 36 }}>
                 <h3 style={{ fontSize: 12, color: C.textDim, letterSpacing: 2, marginBottom: 14 }}>TEAM TRACKER</h3>
                 {[1, 2, 3, 4, 5].map(tier => {
-                  const active = TIERS[tier].teams.filter(t => takenTeams.has(t));
+                  const active = TIERS[tier].teams.filter(t => participants.some(p => p.teams.includes(t)));
                   if (!active.length) return null;
                   return (
                     <div key={tier} style={{ marginBottom: 16 }}>
@@ -404,19 +405,23 @@ export default function App() {
                           const gr = groupResults[t] || [];
                           const ks = knockoutStages[t];
                           const { total } = computeScore([t], groupResults, knockoutStages)[0];
+                          const owners = participants.filter(p => p.teams.includes(t)).map(p => p.name);
                           return (
                             <div key={t} style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 7, padding: "8px 12px" }}>
                               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
                                 <span style={{ fontSize: 13 }}>{FLAG[t] || "🏳️"} {t}</span>
                                 <span style={{ fontSize: 12, fontWeight: 700, color: total > 0 ? TIERS[tier].color : C.textDim }}>{total > 0 ? `+${total}` : ""}</span>
                               </div>
-                              <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
+                              <div style={{ display: "flex", gap: 4, alignItems: "center", marginBottom: 6 }}>
                                 {[0, 1, 2].map(gi => (
                                   <span key={gi} style={{ width: 20, height: 20, borderRadius: 3, fontSize: 10, fontWeight: 700, display: "inline-flex", alignItems: "center", justifyContent: "center", background: gr[gi] === "W" ? "#15803d44" : gr[gi] === "D" ? "#92400e44" : gr[gi] === "L" ? "#7f1d1d44" : C.borderLight, color: gr[gi] === "W" ? "#4ade80" : gr[gi] === "D" ? "#fbbf24" : gr[gi] === "L" ? "#f87171" : C.textDim, border: `1px solid ${gr[gi] === "W" ? "#15803d" : gr[gi] === "D" ? "#92400e" : gr[gi] === "L" ? "#7f1d1d" : C.border}` }}>
                                     {gr[gi] || "·"}
                                   </span>
                                 ))}
                                 {ks && <span style={{ fontSize: 10, color: C.accent, marginLeft: 4 }}>{ks}</span>}
+                              </div>
+                              <div style={{ fontSize: 10, color: C.textMuted, lineHeight: 1.4 }}>
+                                {owners.join(", ")}
                               </div>
                             </div>
                           );
@@ -468,12 +473,12 @@ export default function App() {
                       </div>
                       <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
                         {t.teams.map(team => {
-                          const taken = takenTeams.has(team) && draftPicks[tier] !== team;
                           const selected = draftPicks[tier] === team;
+                          const ownerCount = participants.filter(p => p.teams.includes(team)).length;
                           return (
-                            <button key={team} disabled={taken} onClick={() => setDraftPicks(prev => ({ ...prev, [tier]: team }))}
-                              style={{ background: selected ? t.color : taken ? "#0d0010" : C.cardAlt, color: selected ? "#0d0010" : taken ? C.textDim : "#ddd0f0", border: `1px solid ${selected ? t.color : taken ? C.borderLight : C.border}`, borderRadius: 7, padding: "6px 12px", cursor: taken ? "not-allowed" : "pointer", fontSize: 13, fontWeight: selected ? 700 : 400, textDecoration: taken ? "line-through" : "none" }}>
-                              {FLAG[team] || "🏳️"} {team}{taken ? " ✗" : ""}
+                            <button key={team} onClick={() => setDraftPicks(prev => ({ ...prev, [tier]: team }))}
+                              style={{ background: selected ? t.color : C.cardAlt, color: selected ? "#1e1e1e" : "#ddd0f0", border: `1px solid ${selected ? t.color : C.border}`, borderRadius: 7, padding: "6px 12px", cursor: "pointer", fontSize: 13, fontWeight: selected ? 700 : 400 }}>
+                              {FLAG[team] || "🏳️"} {team}{ownerCount > 0 ? <span style={{ fontSize: 10, opacity: 0.6, marginLeft: 4 }}>×{ownerCount}</span> : ""}
                             </button>
                           );
                         })}
