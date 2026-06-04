@@ -8,15 +8,15 @@ const supabase = createClient(
 
 // ─── Teams & Tiers ────────────────────────────────────────────────────────────
 const TIERS = {
-  1: { label: "Tier 1 — Top Contenders", sublabel: "FIFA Ranked 1–6", color: "#e040fb",
+  1: { label: "Tier 1 — Top Contenders", sublabel: "FIFA Ranked 1–6", color: "#ff2d6b",
     teams: ["France","Spain","Argentina","England","Portugal","Brazil"] },
-  2: { label: "Tier 2 — Contenders", sublabel: "FIFA Ranked 7–12", color: "#f06292",
+  2: { label: "Tier 2 — Contenders", sublabel: "FIFA Ranked 7–12", color: "#ff6b35",
     teams: ["Netherlands","Morocco","Belgium","Germany","Croatia","Colombia"] },
-  3: { label: "Tier 3 — Dark Horses", sublabel: "FIFA Ranked 13–24", color: "#ce93d8",
+  3: { label: "Tier 3 — Dark Horses", sublabel: "FIFA Ranked 13–24", color: "#ff9a6b",
     teams: ["Senegal","Mexico","USA","Uruguay","Japan","Austria","Ecuador","South Korea","Norway","Switzerland","Türkiye","Australia"] },
-  4: { label: "Tier 4 — Wildcards", sublabel: "FIFA Ranked 25–36", color: "#f48fb1",
+  4: { label: "Tier 4 — Wildcards", sublabel: "FIFA Ranked 25–36", color: "#ff6b9d",
     teams: ["Iran","Denmark","Poland","Serbia","Sweden","Algeria","Ukraine","Scotland","Egypt","Ivory Coast","Bosnia and Herzegovina","Czechia"] },
-  5: { label: "Tier 5 — Underdogs", sublabel: "FIFA Ranked 37–48", color: "#b39ddb",
+  5: { label: "Tier 5 — Underdogs", sublabel: "FIFA Ranked 37–48", color: "#c084b0",
     teams: ["Canada","Nigeria","Ghana","Cameroon","Saudi Arabia","Qatar","New Zealand","Congo DR","South Africa","Cape Verde","Curaçao","Uzbekistan"] },
 };
 
@@ -75,19 +75,19 @@ function computeScore(teams, groupResults, knockoutStages) {
 
 // ─── Color palette ────────────────────────────────────────────────────────────
 const C = {
-  bg: "#0d0010",
-  bgGrad: "linear-gradient(160deg,#0d0010 0%,#1a0025 55%,#0d0018 100%)",
-  card: "#12001a",
-  cardAlt: "#180020",
-  border: "#3a1050",
-  borderLight: "#2a0840",
-  primary: "#e040fb",
-  secondary: "#f06292",
-  accent: "#ce93d8",
-  gold: "#f48fb1",
-  text: "#f3e8ff",
-  textMuted: "#9c6ab0",
-  textDim: "#4a2060",
+  bg: "#1a0008",
+  bgGrad: "linear-gradient(160deg,#1a0008 0%,#2d0015 55%,#1a000a 100%)",
+  card: "#240010",
+  cardAlt: "#2e0018",
+  border: "#7a1040",
+  borderLight: "#4a0828",
+  primary: "#ff2d6b",
+  secondary: "#ff6b9d",
+  accent: "#d44070",
+  gold: "#ff4f7b",
+  text: "#ffe8ef",
+  textMuted: "#c06080",
+  textDim: "#7a2040",
 };
 
 function ScoringTable() {
