@@ -8,9 +8,9 @@ const supabase = createClient(
 
 // ─── Teams & Tiers ────────────────────────────────────────────────────────────
 const TIERS = {
-  1: { label: "Tier 1 — Top Contenders", sublabel: "FIFA Ranked 1–6", color: "#e91e8c",
+  1: { label: "Tier 1 — Top Contenders", sublabel: "FIFA Ranked 1–6", color: "#ff0080",
     teams: ["France","Spain","Argentina","England","Portugal","Brazil"] },
-  2: { label: "Tier 2 — Contenders", sublabel: "FIFA Ranked 7–12", color: "#f06292",
+  2: { label: "Tier 2 — Contenders", sublabel: "FIFA Ranked 7–12", color: "#ff4dac",
     teams: ["Netherlands","Morocco","Belgium","Germany","Croatia","Colombia"] },
   3: { label: "Tier 3 — Dark Horses", sublabel: "FIFA Ranked 13–24", color: "#f48fb1",
     teams: ["Senegal","Mexico","USA","Uruguay","Japan","Austria","Ecuador","South Korea","Norway","Switzerland","Türkiye","Australia"] },
@@ -81,10 +81,10 @@ const C = {
   cardAlt: "#313131",
   border: "#3d3d3d",
   borderLight: "#333333",
-  primary: "#f06292",
-  secondary: "#f48fb1",
-  accent: "#e91e8c",
-  gold: "#f06292",
+  primary: "#ff0080",
+  secondary: "#ff4dac",
+  accent: "#ff0080",
+  gold: "#ff4dac",
   text: "#f0f0f0",
   textMuted: "#aaaaaa",
   textDim: "#666666",
@@ -393,7 +393,7 @@ export default function App() {
 
             {takenTeams.size > 0 && (
               <div style={{ marginTop: 36 }}>
-                <h3 style={{ fontSize: 12, color: C.textDim, letterSpacing: 2, marginBottom: 14 }}>TEAM TRACKER</h3>
+                <h3 style={{ fontSize: 12, color: C.textDim, letterSpacing: 2, marginBottom: 14 }}>COUNTRY TRACKER</h3>
                 {[1, 2, 3, 4, 5].map(tier => {
                   const active = TIERS[tier].teams.filter(t => participants.some(p => p.teams.includes(t)));
                   if (!active.length) return null;
