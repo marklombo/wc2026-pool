@@ -240,7 +240,7 @@ export default function App() {
   useEffect(() => {
     loadData();
     fetchLiveScores();
-    const interval = setInterval(fetchLiveScores, 30 * 60 * 1000);
+    const interval = setInterval(fetchLiveScores, 5 * 60 * 1000);
     return () => clearInterval(interval);
   }, [loadData, fetchLiveScores]);
 
