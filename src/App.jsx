@@ -165,11 +165,7 @@ export default function App() {
       if (!apiKey) return;
 
       // World Cup 2026 league ID is 1 (FIFA World Cup) season 2026
-      const res = await fetch("https://v3.football.api-sports.io/fixtures?league=1&season=2026", {
-        headers: {
-          "x-apisports-key": apiKey,
-        }
-      });
+      const res = await fetch("/api/scores");
       if (!res.ok) return;
       const data = await res.json();
       const fixtures = data.response || [];
