@@ -161,50 +161,76 @@ export default function App() {
 
   const fetchLiveScores = useCallback(async () => {
     try {
-      const res = await fetch("https://raw.githubusercontent.com/openfootball/worldcup.json/master/2026/worldcup.json");
+      const apiKey = import.meta.env.VITE_API_FOOTBALL_KEY;
+      if (!apiKey) return;
+
+      // World Cup 2026 league ID is 1 (FIFA World Cup) season 2026
+      const res = await fetch("https://v3.football.api-sports.io/fixtures?league=1&season=2026", {
+        headers: {
+          "x-apisports-key": apiKey,
+        }
+      });
       if (!res.ok) return;
       const data = await res.json();
+      const fixtures = data.response || [];
+
       const newGroupResults = {};
+      const teamGameCount = {};
+      const teamBestStage = {};
       const newKnockout = {};
+
       const knockoutRoundMap = {
-        "Round of 32": "Round of 32", "Round of 16": "Round of 16",
-        "Quarterfinals": "Quarterfinal", "Quarterfinal": "Quarterfinal",
-        "Semifinals": "Semifinal", "Semifinal": "Semifinal",
+        "Round of 32": "Round of 32",
+        "Round of 16": "Round of 16",
+        "Quarter-finals": "Quarterfinal",
+        "Semi-finals": "Semifinal",
         "Final": null,
       };
-      const teamBestStage = {};
-      (data.matches || []).forEach(match => {
-        if (!match.score) return;
-        const { ft } = match.score;
-        if (!ft || ft.length < 2) return;
-        const t1 = normalizeTeamName(match.team1);
-        const t2 = normalizeTeamName(match.team2);
-        const [g1, g2] = ft;
-        const round = match.round || "";
-        const isGroup = round.toLowerCase().includes("matchday") || round.toLowerCase().includes("group");
+
+      fixtures.forEach(fixture => {
+        const status = fixture.fixture?.status?.short;
+        const finished = ["FT", "AET", "PEN"].includes(status);
+        if (!finished) return;
+
+        const t1 = normalizeTeamName(fixture.teams?.home?.name);
+        const t2 = normalizeTeamName(fixture.teams?.away?.name);
+        const g1 = fixture.goals?.home;
+        const g2 = fixture.goals?.away;
+        if (g1 === null || g1 === undefined || g2 === null || g2 === undefined) return;
+
+        const round = fixture.league?.round || "";
+        const isGroup = round.toLowerCase().includes("group");
+
         if (isGroup) {
           if (!newGroupResults[t1]) newGroupResults[t1] = [];
           if (!newGroupResults[t2]) newGroupResults[t2] = [];
-          if (g1 > g2) { newGroupResults[t1].push("W"); newGroupResults[t2].push("L"); }
-          else if (g1 < g2) { newGroupResults[t1].push("L"); newGroupResults[t2].push("W"); }
-          else { newGroupResults[t1].push("D"); newGroupResults[t2].push("D"); }
+          if (!teamGameCount[t1]) teamGameCount[t1] = 0;
+          if (!teamGameCount[t2]) teamGameCount[t2] = 0;
+          const idx1 = teamGameCount[t1]++;
+          const idx2 = teamGameCount[t2]++;
+          if (g1 > g2) { newGroupResults[t1][idx1] = "W"; newGroupResults[t2][idx2] = "L"; }
+          else if (g1 < g2) { newGroupResults[t1][idx1] = "L"; newGroupResults[t2][idx2] = "W"; }
+          else { newGroupResults[t1][idx1] = "D"; newGroupResults[t2][idx2] = "D"; }
         } else {
           const mappedRound = knockoutRoundMap[round];
           const winner = g1 > g2 ? t1 : g1 < g2 ? t2 : null;
           const loser = g1 > g2 ? t2 : g1 < g2 ? t1 : null;
           if (round === "Final" && winner) {
             newKnockout[winner] = "Champion";
-            newKnockout[loser] = "Runner-Up";
+            if (loser) newKnockout[loser] = "Runner-Up";
           } else if (mappedRound && winner) {
             if (!teamBestStage[winner] || KNOCKOUT_PTS[mappedRound] > KNOCKOUT_PTS[teamBestStage[winner]]) teamBestStage[winner] = mappedRound;
-            if (!teamBestStage[loser] || KNOCKOUT_PTS[mappedRound] > KNOCKOUT_PTS[teamBestStage[loser]]) teamBestStage[loser] = mappedRound;
+            if (loser && (!teamBestStage[loser] || KNOCKOUT_PTS[mappedRound] > KNOCKOUT_PTS[teamBestStage[loser]])) teamBestStage[loser] = mappedRound;
           }
         }
       });
+
       Object.assign(newKnockout, teamBestStage);
       const grRows = [];
       Object.entries(newGroupResults).forEach(([team, results]) => {
-        results.forEach((result, game_index) => { grRows.push({ team, game_index, result }); });
+        results.forEach((result, game_index) => {
+          if (result) grRows.push({ team, game_index, result });
+        });
       });
       if (grRows.length) await supabase.from("group_results").upsert(grRows, { onConflict: "team,game_index" });
       const ksRows = Object.entries(newKnockout).map(([team, stage]) => ({ team, stage }));
@@ -604,7 +630,7 @@ export default function App() {
       </div>
 
       <div style={{ borderTop: `1px solid ${C.borderLight}`, marginTop: 60, padding: "18px", textAlign: "center", fontSize: 11, color: C.textDim }}>
-        Merge 2026 World Cup Pool · June 11 – July 19, 2026 · Scores via openfootball
+        Merge 2026 World Cup Pool · June 11 – July 19, 2026 · Scores via API-Football
       </div>
     </div>
   );
