@@ -20,13 +20,33 @@ const TIERS = {
     teams: ["Canada","Nigeria","Ghana","Cameroon","Saudi Arabia","Qatar","New Zealand","Congo DR","South Africa","Cape Verde","Curaçao","Uzbekistan"] },
 };
 
-const KNOCKOUT_PTS = {
+// Points per round (incremental)
+const KNOCKOUT_STAGE_PTS = {
   "Round of 32": 4,
   "Round of 16": 5,
   "Quarterfinal": 6,
   "Semifinal": 7,
   "Runner-Up": 8,
   "Champion": 9,
+};
+
+// Cumulative points for display/scoring
+const KNOCKOUT_STAGES_ORDER = ["Round of 32","Round of 16","Quarterfinal","Semifinal","Runner-Up","Champion"];
+
+function getKnockoutPts(stage) {
+  if (!stage) return 0;
+  const idx = KNOCKOUT_STAGES_ORDER.indexOf(stage);
+  if (idx < 0) return 0;
+  return KNOCKOUT_STAGES_ORDER.slice(0, idx + 1).reduce((sum, s) => sum + KNOCKOUT_STAGE_PTS[s], 0);
+}
+
+const CUMULATIVE_PTS = {
+  "Round of 32": 4,
+  "Round of 16": 9,
+  "Quarterfinal": 15,
+  "Semifinal": 22,
+  "Runner-Up": 30,
+  "Champion": 39,
 };
 
 const FLAG = {
@@ -68,7 +88,7 @@ function computeScore(teams, groupResults, knockoutStages) {
     const gr = groupResults[team] || [];
     const gPts = gr.reduce((s, r) => s + (r === "W" ? 3 : r === "D" ? 1 : 0), 0);
     const ks = knockoutStages[team];
-    const kPts = ks ? (KNOCKOUT_PTS[ks] || 0) : 0;
+    const kPts = getKnockoutPts(ks);
     return { team, gPts, kPts, total: gPts + kPts };
   });
 }
@@ -104,13 +124,13 @@ function ScoringTable() {
           <div style={{ marginTop: 8, fontSize: 11, color: C.textDim }}>3 games · max 9 pts · auto-updated</div>
         </div>
         <div>
-          <div style={{ fontWeight: 700, color: C.text, marginBottom: 8, fontSize: 13 }}>Knockout Rounds</div>
-          {Object.entries(KNOCKOUT_PTS).map(([stage, pts]) => (
+          <div style={{ fontWeight: 700, color: C.text, marginBottom: 8, fontSize: 13 }}>Knockout Rounds (cumulative)</div>
+          {Object.entries(CUMULATIVE_PTS).map(([stage, pts]) => (
             <div key={stage} style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
               <span>{stage}</span><span style={{ color: C.text, fontWeight: 600 }}>{pts} pts</span>
             </div>
           ))}
-          <div style={{ marginTop: 8, fontSize: 11, color: C.textDim }}>Same for all tiers</div>
+          <div style={{ marginTop: 8, fontSize: 11, color: C.textDim }}>Points stack each round</div>
         </div>
       </div>
     </div>
@@ -164,7 +184,6 @@ export default function App() {
       const apiKey = import.meta.env.VITE_API_FOOTBALL_KEY;
       if (!apiKey) return;
 
-      // World Cup 2026 league ID is 1 (FIFA World Cup) season 2026
       const res = await fetch("/api/scores");
       if (!res.ok) return;
       const data = await res.json();
@@ -215,8 +234,12 @@ export default function App() {
             newKnockout[winner] = "Champion";
             if (loser) newKnockout[loser] = "Runner-Up";
           } else if (mappedRound && winner) {
-            if (!teamBestStage[winner] || KNOCKOUT_PTS[mappedRound] > KNOCKOUT_PTS[teamBestStage[winner]]) teamBestStage[winner] = mappedRound;
-            if (loser && (!teamBestStage[loser] || KNOCKOUT_PTS[mappedRound] > KNOCKOUT_PTS[teamBestStage[loser]])) teamBestStage[loser] = mappedRound;
+            const winnerCur = teamBestStage[winner];
+            if (!winnerCur || getKnockoutPts(mappedRound) > getKnockoutPts(winnerCur)) teamBestStage[winner] = mappedRound;
+            if (loser) {
+              const loserCur = teamBestStage[loser];
+              if (!loserCur || getKnockoutPts(mappedRound) > getKnockoutPts(loserCur)) teamBestStage[loser] = mappedRound;
+            }
           }
         }
       });
@@ -328,7 +351,7 @@ export default function App() {
     <div style={{ minHeight: "100vh", background: C.bgGrad, color: C.text, fontFamily: "'Georgia','Times New Roman',serif" }}>
 
       {/* Header */}
-      <div style={{ borderBottom: `1px solid ${C.border}`, padding: "14px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", background: "rgba(13,0,16,0.95)", backdropFilter: "blur(10px)", position: "sticky", top: 0, zIndex: 100, gap: 12, flexWrap: "wrap" }}>
+      <div style={{ borderBottom: `1px solid ${C.border}`, padding: "14px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", background: "rgba(30,30,30,0.97)", backdropFilter: "blur(10px)", position: "sticky", top: 0, zIndex: 100, gap: 12, flexWrap: "wrap" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <span style={{ fontSize: 24 }}>⚽</span>
           <div>
@@ -346,7 +369,7 @@ export default function App() {
           <button onClick={fetchLiveScores} style={{ background: "transparent", border: `1px solid ${C.border}`, borderRadius: 6, color: C.textMuted, fontSize: 11, padding: "4px 10px", cursor: "pointer" }}>↻ Refresh</button>
           <nav style={{ display: "flex", gap: 6 }}>
             {[["standings", "🏆 Standings"], ["draft", "✍️ Join"], ["admin", "⚙️ Admin"]].map(([v, label]) => (
-              <button key={v} onClick={() => setView(v)} style={{ background: view === v ? C.primary : "transparent", color: view === v ? "#0d0010" : C.textMuted, border: `1px solid ${view === v ? C.primary : C.border}`, borderRadius: 6, padding: "6px 14px", fontSize: 13, cursor: "pointer", fontWeight: view === v ? 700 : 400 }}>
+              <button key={v} onClick={() => setView(v)} style={{ background: view === v ? C.primary : "transparent", color: view === v ? "#1e1e1e" : C.textMuted, border: `1px solid ${view === v ? C.primary : C.border}`, borderRadius: 6, padding: "6px 14px", fontSize: 13, cursor: "pointer", fontWeight: view === v ? 700 : 400 }}>
                 {label}
               </button>
             ))}
@@ -374,13 +397,13 @@ export default function App() {
               <div style={{ textAlign: "center", padding: "56px 20px", border: `2px dashed ${C.border}`, borderRadius: 14, color: C.textDim }}>
                 <div style={{ fontSize: 48, marginBottom: 12 }}>⚽</div>
                 <div style={{ fontSize: 18, marginBottom: 6 }}>No participants yet</div>
-                <button onClick={() => setView("draft")} style={{ marginTop: 8, background: C.primary, color: "#0d0010", border: "none", borderRadius: 8, padding: "10px 24px", fontWeight: 700, cursor: "pointer", fontSize: 14 }}>Be the first →</button>
+                <button onClick={() => setView("draft")} style={{ marginTop: 8, background: C.primary, color: "#1e1e1e", border: "none", borderRadius: 8, padding: "10px 24px", fontWeight: 700, cursor: "pointer", fontSize: 14 }}>Be the first →</button>
               </div>
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 {scores.map((p, i) => (
                   <div key={p.id} style={{ background: i === 0 ? "linear-gradient(120deg,#2e2e2e,#3a3a3a)" : C.card, border: `1px solid ${rankBorder(i)}`, borderRadius: 12, padding: "16px 20px", display: "flex", alignItems: "center", gap: 16 }}>
-                    <div style={{ width: 36, height: 36, borderRadius: "50%", flexShrink: 0, background: "#000000", display: "flex", alignItems: "center", justifyContent: "center", fontSize: i < 3 ? 18 : 13, fontWeight: 900, color: i < 3 ? "#ffffff" : C.textDim }}>
+                    <div style={{ width: 36, height: 36, borderRadius: "50%", flexShrink: 0, background: "#000000", display: "flex", alignItems: "center", justifyContent: "center", fontSize: i < 3 ? 18 : 13, fontWeight: 900, color: "#ffffff" }}>
                       {i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : i + 1}
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
@@ -472,7 +495,7 @@ export default function App() {
                 <div style={{ fontSize: 22, fontWeight: 700, color: C.primary, marginBottom: 8 }}>You're in!</div>
                 <div style={{ color: C.textMuted, marginBottom: 24, fontSize: 14 }}>Your picks are locked. Check standings as games kick off.</div>
                 <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
-                  <button onClick={() => setView("standings")} style={{ background: C.primary, color: "#0d0010", border: "none", borderRadius: 8, padding: "10px 24px", fontWeight: 700, cursor: "pointer" }}>View Standings</button>
+                  <button onClick={() => setView("standings")} style={{ background: C.primary, color: "#1e1e1e", border: "none", borderRadius: 8, padding: "10px 24px", fontWeight: 700, cursor: "pointer" }}>View Standings</button>
                   <button onClick={() => setDraftDone(false)} style={{ background: "transparent", color: C.textMuted, border: `1px solid ${C.border}`, borderRadius: 8, padding: "10px 24px", cursor: "pointer" }}>Add Another Person</button>
                 </div>
               </div>
@@ -509,7 +532,7 @@ export default function App() {
                   );
                 })}
                 <button onClick={submitDraft} disabled={submitting || !draftName.trim() || !allPicked}
-                  style={{ width: "100%", padding: "14px", fontSize: 16, fontWeight: 700, background: (!draftName.trim() || !allPicked) ? C.cardAlt : C.primary, color: (!draftName.trim() || !allPicked) ? C.textDim : "#0d0010", border: "none", borderRadius: 10, cursor: "pointer" }}>
+                  style={{ width: "100%", padding: "14px", fontSize: 16, fontWeight: 700, background: (!draftName.trim() || !allPicked) ? C.cardAlt : C.primary, color: (!draftName.trim() || !allPicked) ? C.textDim : "#1e1e1e", border: "none", borderRadius: 10, cursor: "pointer" }}>
                   {submitting ? "Saving..." : (!draftName.trim() || !allPicked) ? "Pick 1 team from each tier to continue" : "Lock In My Picks →"}
                 </button>
               </div>
@@ -528,7 +551,7 @@ export default function App() {
                 <div style={{ fontSize: 13, color: C.textMuted, marginBottom: 10 }}>Admin Password</div>
                 <input type="password" value={adminPassInput} onChange={e => setAdminPassInput(e.target.value)} onKeyDown={e => e.key === "Enter" && unlockAdmin()} placeholder="Enter password..."
                   style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 8, padding: "10px 14px", color: C.text, fontSize: 14, width: "100%", boxSizing: "border-box", outline: "none", marginBottom: 12 }} />
-                <button onClick={unlockAdmin} style={{ background: C.primary, color: "#0d0010", border: "none", borderRadius: 8, padding: "10px", fontWeight: 700, cursor: "pointer", width: "100%" }}>Unlock →</button>
+                <button onClick={unlockAdmin} style={{ background: C.primary, color: "#1e1e1e", border: "none", borderRadius: 8, padding: "10px", fontWeight: 700, cursor: "pointer", width: "100%" }}>Unlock →</button>
               </div>
             ) : (
               <div>
@@ -543,14 +566,14 @@ export default function App() {
 
                 {adminTab === "knockout" && (
                   <div>
-                    <p style={{ color: C.textMuted, fontSize: 13, marginBottom: 20 }}>Set how far each team advanced. Only needed for knockout rounds — group stage is automatic.</p>
+                    <p style={{ color: C.textMuted, fontSize: 13, marginBottom: 20 }}>Set the furthest round each team reached. Points are cumulative — a team in the QF gets R32+R16+QF points.</p>
                     {[1, 2, 3, 4, 5].map(tier => (
                       <div key={tier} style={{ marginBottom: 22 }}>
                         <div style={{ color: TIERS[tier].color, fontSize: 13, fontWeight: 700, marginBottom: 10 }}>{TIERS[tier].label}</div>
                         <div style={{ display: "grid", gap: 6, gridTemplateColumns: "repeat(auto-fill,minmax(300px,1fr))" }}>
                           {TIERS[tier].teams.map(team => {
                             const ks = knockoutStages[team] || "";
-                            const kPts = ks && KNOCKOUT_PTS[ks] ? KNOCKOUT_PTS[ks] : 0;
+                            const kPts = getKnockoutPts(ks);
                             return (
                               <div key={team} style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 8, padding: "9px 14px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
                                 <span style={{ fontSize: 13, flex: 1 }}>{FLAG[team] || "🏳️"} {team}</span>
@@ -559,8 +582,8 @@ export default function App() {
                                   <select value={ks} onChange={e => setKnockout(team, e.target.value)}
                                     style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 6, padding: "4px 8px", color: C.text, fontSize: 12, cursor: "pointer", outline: "none" }}>
                                     <option value="">— Group only —</option>
-                                    {Object.entries(KNOCKOUT_PTS).map(([s, pts]) => (
-                                      <option key={s} value={s}>{s} (+{pts})</option>
+                                    {Object.entries(CUMULATIVE_PTS).map(([s, pts]) => (
+                                      <option key={s} value={s}>{s} ({pts} total pts)</option>
                                     ))}
                                   </select>
                                 </div>
