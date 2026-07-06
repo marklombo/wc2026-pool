@@ -252,8 +252,9 @@ export default function App() {
         });
       });
       if (grRows.length) await supabase.from("group_results").upsert(grRows, { onConflict: "team,game_index" });
-      const ksRows = Object.entries(newKnockout).map(([team, stage]) => ({ team, stage }));
-      if (ksRows.length) await supabase.from("knockout_stages").upsert(ksRows, { onConflict: "team" });
+      const ksRows = [];
+      // Knockout stages are managed manually in admin only
+      // if (ksRows.length) await supabase.from("knockout_stages").upsert(ksRows, { onConflict: "team" });
       await loadData();
     } catch (e) {
       console.error("Live score fetch error:", e);
