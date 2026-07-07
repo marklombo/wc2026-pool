@@ -191,16 +191,8 @@ export default function App() {
 
       const newGroupResults = {};
       const teamGameCount = {};
-      const teamBestStage = {};
-      const newKnockout = {};
 
-      const knockoutRoundMap = {
-        "Round of 32": "Round of 32",
-        "Round of 16": "Round of 16",
-        "Quarter-finals": "Quarterfinal",
-        "Semi-finals": "Semifinal",
-        "Final": null,
-      };
+      const knockoutRoundMap = {};
 
       fixtures.forEach(fixture => {
         const status = fixture.fixture?.status?.short;
@@ -226,21 +218,6 @@ export default function App() {
           if (g1 > g2) { newGroupResults[t1][idx1] = "W"; newGroupResults[t2][idx2] = "L"; }
           else if (g1 < g2) { newGroupResults[t1][idx1] = "L"; newGroupResults[t2][idx2] = "W"; }
           else { newGroupResults[t1][idx1] = "D"; newGroupResults[t2][idx2] = "D"; }
-        } else {
-          const mappedRound = knockoutRoundMap[round];
-          const winner = g1 > g2 ? t1 : g1 < g2 ? t2 : null;
-          const loser = g1 > g2 ? t2 : g1 < g2 ? t1 : null;
-          if (round === "Final" && winner) {
-            newKnockout[winner] = "Champion";
-            if (loser) newKnockout[loser] = "Runner-Up";
-          } else if (mappedRound && winner) {
-            const winnerCur = teamBestStage[winner];
-            if (!winnerCur || getKnockoutPts(mappedRound) > getKnockoutPts(winnerCur)) teamBestStage[winner] = mappedRound;
-            if (loser) {
-              const loserCur = teamBestStage[loser];
-              if (!loserCur || getKnockoutPts(mappedRound) > getKnockoutPts(loserCur)) teamBestStage[loser] = mappedRound;
-            }
-          }
         }
       });
 
@@ -252,9 +229,6 @@ export default function App() {
         });
       });
       if (grRows.length) await supabase.from("group_results").upsert(grRows, { onConflict: "team,game_index" });
-      const ksRows = [];
-      // Knockout stages are managed manually in admin only
-      // if (ksRows.length) await supabase.from("knockout_stages").upsert(ksRows, { onConflict: "team" });
       await loadData();
     } catch (e) {
       console.error("Live score fetch error:", e);
